@@ -1,216 +1,258 @@
-// Full working App.js with Week 1–12 dropdown, timer, session tracking, and all views
+// Final Full Version - with Countdown Timer & Fixed Backgrounds
 import React, { useState, useEffect } from "react";
 
 const workoutPlan = {
-  "Day 1 - Push": ["Incline Dumbbell Press", "Machine Chest Press", "Dumbbell Shoulder Press", "Lateral Raises", "Overhead Rope Triceps Extension", "Pushups (to failure)"],
-  "Day 2 - Pull": ["Lat Pulldown", "Seated Row", "Dumbbell Shrugs", "Face Pulls", "Dumbbell Curls", "Hanging Leg Raises"],
-  "Day 3 - Legs": ["Leg Press", "Bulgarian Split Squat", "Hamstring Curls", "Calf Raises", "Walking Lunges"],
-  "Day 4 - Shoulders + Arms": ["Arnold Press", "Cable Lateral Raises", "Barbell Curls", "Triceps Pushdowns", "Reverse Pec Deck", "Incline DB Curl + Overhead Triceps (superset)"],
-  "Day 5 - Conditioning + Abs": ["Incline Walk (15 mins)", "Battle Rope", "Sled Push", "Cable Crunch", "Ab Rollouts", "Russian Twists"],
+  "Day 1 - Push": [
+    "Incline Dumbbell Press (4 sets of 10 reps)",
+    "Machine Chest Press (4 sets of 10 reps)",
+    "Dumbbell Shoulder Press (4 sets of 10 reps)",
+    "Lateral Raises (4 sets of 10 reps)",
+    "Overhead Rope Triceps Extension (4 sets of 10 reps)",
+    "Pushups (to failure)"
+  ],
+  "Day 2 - Pull": [
+    "Lat Pulldown (4 sets of 10 reps)",
+    "Seated Row (4 sets of 10 reps)",
+    "Dumbbell Shrugs (4 sets of 10 reps)",
+    "Face Pulls (4 sets of 10 reps)",
+    "Dumbbell Curls (4 sets of 10 reps)",
+    "Hanging Leg Raises (4 sets of 10 reps)"
+  ],
+  "Day 3 - Legs": [
+    "Leg Press (4 sets of 10 reps)",
+    "Bulgarian Split Squat (4 sets of 10 reps)",
+    "Hamstring Curls (4 sets of 10 reps)",
+    "Calf Raises (4 sets of 10 reps)",
+    "Walking Lunges (4 sets of 10 reps)"
+  ],
+  "Day 4 - Shoulders + Arms": [
+    "Arnold Press (4 sets of 10 reps)",
+    "Cable Lateral Raises (4 sets of 10 reps)",
+    "Barbell Curls (4 sets of 10 reps)",
+    "Triceps Pushdowns (4 sets of 10 reps)",
+    "Reverse Pec Deck (4 sets of 10 reps)",
+    "Incline DB Curl + Overhead Triceps (superset) (4 sets of 10 reps)"
+  ],
+  "Day 5 - Conditioning + Abs": [
+    "Incline Walk (15 mins)",
+    "Battle Rope (4 rounds)",
+    "Sled Push (4 rounds)",
+    "Cable Crunch (4 sets of 15 reps)",
+    "Ab Rollouts (4 sets of 10 reps)",
+    "Russian Twists (4 sets of 20 reps)"
+  ],
   "Day 6 - Rest": [],
   "Day 7 - Rest": []
 };
+
+const weeks = Array.from({ length: 12 }, (_, i) => `Week ${i + 1}`);
+
+const backgroundStyle = (img) => ({
+  backgroundImage: `url(${img})`,
+  backgroundSize: "cover",
+  backgroundPosition: "center",
+  backgroundRepeat: "no-repeat",
+  minHeight: "100vh",
+  padding: "2rem",
+  color: "white",
+  fontFamily: "Arial, sans-serif"
+});
+
+const backgroundHome = process.env.PUBLIC_URL + "/hero.png";
+const backgroundWorkout = process.env.PUBLIC_URL + "/workout-bg.png";
+const backgroundAnalysis = process.env.PUBLIC_URL + "/analysis-bg.png";
+const backgroundGuide = process.env.PUBLIC_URL + "/loading-guide.png";
 
 export default function App() {
   const [view, setView] = useState("home");
   const [week, setWeek] = useState("Week 1");
   const [data, setData] = useState({});
-  const [expandedDay, setExpandedDay] = useState(null);
-  const [timerDuration, setTimerDuration] = useState(60);
-  const [timeLeft, setTimeLeft] = useState(0);
-  const [timerRunning, setTimerRunning] = useState(false);
-  const [sessionStartTimes, setSessionStartTimes] = useState({});
-  const [liveDurations, setLiveDurations] = useState({});
+  const [startTime, setStartTime] = useState(null);
+  const [duration, setDuration] = useState(0);
+  const [timer, setTimer] = useState(0);
+  const [expandedDays, setExpandedDays] = useState([]);
+
+  // Countdown timer state
+  const [countdown, setCountdown] = useState(0);
+  const [selectedCountdown, setSelectedCountdown] = useState(60);
 
   useEffect(() => {
-    let interval = null;
-    if (timerRunning && timeLeft > 0) {
+    let interval;
+    if (startTime) {
       interval = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
+        setTimer(Math.floor((Date.now() - startTime) / 1000));
       }, 1000);
-    } else if (timeLeft === 0 && timerRunning) {
-      setTimerRunning(false);
-      new Audio("https://www.soundjay.com/button/beep-07.wav").play();
     }
     return () => clearInterval(interval);
-  }, [timerRunning, timeLeft]);
+  }, [startTime]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setLiveDurations((prev) => {
-        const updates = { ...prev };
-        Object.entries(sessionStartTimes).forEach(([day, start]) => {
-          if (start) {
-            const now = Date.now();
-            const durationMs = now - start;
-            const minutes = Math.floor(durationMs / 60000);
-            const seconds = Math.floor((durationMs % 60000) / 1000);
-            updates[day] = `${minutes}m ${seconds}s`;
-          }
+    let interval;
+    if (countdown > 0) {
+      interval = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev === 1) new Audio("/beep.mp3").play();
+          return prev - 1;
         });
-        return updates;
-      });
-    }, 1000);
+      }, 1000);
+    }
     return () => clearInterval(interval);
-  }, [sessionStartTimes]);
+  }, [countdown]);
 
   const toggleDay = (day) => {
-    setExpandedDay(expandedDay === day ? null : day);
-  };
-
-  const handleChange = (day, exercise, idx, field, value) => {
-    const updated = { ...data };
-    if (!updated[week]) updated[week] = {};
-    if (!updated[week][day]) updated[week][day] = {};
-    if (!updated[week][day][exercise]) updated[week][day][exercise] = [];
-    const sets = [...updated[week][day][exercise]];
-    sets[idx] = { ...sets[idx], [field]: value };
-    const reps = parseInt(sets[idx]?.reps);
-    const weight = parseFloat(sets[idx]?.weight);
-    if (!isNaN(reps) && !isNaN(weight)) {
-      sets[idx].estimated1RM = (weight * (1 + reps / 30)).toFixed(2);
-      sets[idx].nextWeight = (sets[idx].estimated1RM * 0.75).toFixed(2);
-    }
-    updated[week][day][exercise] = sets;
-    setData(updated);
-  };
-
-  const addSet = (day, exercise) => {
-    const updated = { ...data };
-    if (!updated[week]) updated[week] = {};
-    if (!updated[week][day]) updated[week][day] = {};
-    if (!updated[week][day][exercise]) updated[week][day][exercise] = [];
-    updated[week][day][exercise].push({ weight: "", reps: "", estimated1RM: "", nextWeight: "" });
-    setData(updated);
-  };
-
-  const removeSet = (day, exercise, idx) => {
-    const updated = { ...data };
-    updated[week][day][exercise].splice(idx, 1);
-    setData(updated);
-  };
-
-  const startSession = (day) => {
-    setSessionStartTimes({ ...sessionStartTimes, [day]: Date.now() });
-  };
-
-  const endSession = (day) => {
-    const start = sessionStartTimes[day];
-    if (!start) return;
-    const end = Date.now();
-    const durationMs = end - start;
-    const minutes = Math.floor(durationMs / 60000);
-    const seconds = Math.floor((durationMs % 60000) / 1000);
-    const updated = { ...data };
-    if (!updated[week]) updated[week] = {};
-    if (!updated[week][day]) updated[week][day] = {};
-    updated[week][day]._sessionDuration = `${minutes}m ${seconds}s`;
-    setData(updated);
-    setSessionStartTimes({ ...sessionStartTimes, [day]: null });
-    const newLive = { ...liveDurations };
-    delete newLive[day];
-    setLiveDurations(newLive);
-  };
-
-  const weekOptions = Array.from({ length: 12 }, (_, i) => `Week ${i + 1}`);
-
-  if (view === "home") {
-    return (
-      <div style={{ backgroundImage: "url('/hero.png')", backgroundSize: "cover", backgroundPosition: "center", minHeight: "100vh", color: "#fff", fontFamily: "Lilita One, sans-serif", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-        <h1 style={{
-  fontSize: "2.5rem",
-  color: "#f97316",
-  textAlign: "center",
-  fontWeight: "800",
-  lineHeight: "1.2"
-}}>
-  Put The Work In <br />
-  Let's Do This!
-</h1>
-        <div style={{ marginTop: "2rem" }}>
-          <button onClick={() => setView("workout")} style={{ padding: "1rem 2rem", marginRight: "1rem", fontWeight: "600" }}>Start Workout</button>
-          <button onClick={() => setView("analysis")} style={{ padding: "1rem 2rem" }}>View Analysis</button>
-        </div>
-      </div>
+    setExpandedDays((prev) =>
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
     );
-  }
+  };
 
-  if (view === "workout") {
+  const handleInputChange = (day, exercise, setIndex, field, value) => {
+    setData((prev) => {
+      const weekData = { ...prev[week] } || {};
+      const dayData = { ...weekData[day] } || {};
+      const exerciseData = [...(dayData[exercise] || [])];
+      exerciseData[setIndex] = { ...exerciseData[setIndex], [field]: value };
+      return {
+        ...prev,
+        [week]: {
+          ...weekData,
+          [day]: {
+            ...dayData,
+            [exercise]: exerciseData
+          }
+        }
+      };
+    });
+  };
+
+  const exportToCSV = () => {
+    const lines = ["Week,Day,Exercise,Set,Weight,Reps"];
+    Object.entries(data).forEach(([w, weekData]) => {
+      Object.entries(weekData).forEach(([day, dayData]) => {
+        Object.entries(dayData).forEach(([exercise, sets]) => {
+          sets.forEach((set, idx) => {
+            lines.push([
+              w,
+              day,
+              exercise,
+              idx + 1,
+              set.weight,
+              set.reps
+            ].join(","));
+          });
+        });
+      });
+    });
+    const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "workout_data.csv";
+    a.click();
+  };
+
+  if (view === "guide") {
     return (
-      <div style={{ backgroundImage: "url('/workout-bg.png')", backgroundSize: "cover", backgroundPosition: "center", minHeight: "100vh", color: "#fff", padding: "2rem", fontFamily: "Lilita One, sans-serif" }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
-          <h2 style={{ marginRight: '1rem' }}>Weekly Workout Plan</h2>
-          <select value={week} onChange={(e) => setWeek(e.target.value)}>
-            {weekOptions.map((w) => (
-              <option key={w} value={w}>{w}</option>
-            ))}
-          </select>
-        </div>
-        <div style={{ marginBottom: '1.5rem' }}>
-          <label>Select Rest Timer: </label>
-          <select value={timerDuration} onChange={e => setTimerDuration(Number(e.target.value))}>
-            <option value={60}>60 seconds</option>
-            <option value={90}>90 seconds</option>
-            <option value={120}>120 seconds</option>
-            <option value={180}>180 seconds</option>
-          </select>
-          <button onClick={() => { setTimeLeft(timerDuration); setTimerRunning(true); }} style={{ marginLeft: '1rem', padding: '0.5rem 1rem' }}>Start Timer</button>
-          <button onClick={() => { setTimerRunning(false); setTimeLeft(0); }} style={{ marginLeft: '0.5rem', padding: '0.5rem 1rem' }}>Stop Timer</button>
-          <button onClick={() => setView("home")} style={{ marginLeft: '1rem', padding: '0.5rem 1rem' }}>Home</button>
-          {timerRunning && <p style={{ marginTop: '0.5rem' }}>⏱ Time Left: {timeLeft}s</p>}
-        </div>
-
-        {Object.entries(workoutPlan).map(([day, exercises]) => (
-          <div key={day} style={{ marginBottom: "2rem", borderBottom: "1px solid #444", paddingBottom: "1rem" }}>
-            <h3 onClick={() => toggleDay(day)} style={{ color: "#f97316", cursor: "pointer" }}>{expandedDay === day ? '▼' : '▶'} {day}</h3>
-            {expandedDay === day && (
-              <div>
-                {data[week]?.[day]?._sessionDuration && <p><strong>Previous Session:</strong> {data[week][day]._sessionDuration}</p>}
-                {liveDurations[day] && <p><strong>⏱ Session Timer:</strong> {liveDurations[day]}</p>}
-                {!sessionStartTimes[day] && <button onClick={() => startSession(day)}>Start Session</button>}
-                {sessionStartTimes[day] && <button onClick={() => endSession(day)}>End Session</button>}
-                {exercises.length === 0 ? <p>Rest Day</p> : exercises.map((exercise) => (
-                  <div key={exercise} style={{ marginBottom: '1rem' }}>
-                    <h4>{exercise}</h4>
-                    {(data[week]?.[day]?.[exercise] || []).map((set, idx) => (
-                      <div key={idx} style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                        <input placeholder="Weight (kg)" value={set.weight} onChange={e => handleChange(day, exercise, idx, 'weight', e.target.value)} />
-                        <input placeholder="Reps" value={set.reps} onChange={e => handleChange(day, exercise, idx, 'reps', e.target.value)} />
-                        <input placeholder="1RM" value={set.estimated1RM || ""} readOnly />
-                        <input placeholder="Next Wt" value={set.nextWeight || ""} readOnly />
-                        <button onClick={() => removeSet(day, exercise, idx)}>Remove</button>
-                      </div>
-                    ))}
-                    <button onClick={() => addSet(day, exercise)}>+ Add Set</button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
+      <div style={backgroundStyle(backgroundGuide)}>
+        <h2 style={{ color: "#f97316" }}>Progressive Loading Table (RIR-style)</h2>
+        <ul>
+          <li>Set 1: Easy (70%) – Lightest weight – warm-up pace</li>
+          <li>Set 2: Moderate (80–85%) – Slightly heavier – still controlled</li>
+          <li>Set 3: Hard (90%) – Heavier again – challenge your strength</li>
+          <li>Set 4: Max Effort (95–100%) – Heaviest you can go for 10 reps or close to failure</li>
+        </ul>
+        <p>Example: Dumbbell Shoulder Press – Set 1: 14kg, Set 2: 16kg, Set 3: 18kg, Set 4: 20kg</p>
+        <p>This method minimizes injury risk and builds strength efficiently.</p>
+        <button onClick={() => setView("home")}>Back to Home</button>
       </div>
     );
   }
 
   if (view === "analysis") {
     return (
-      <div style={{ backgroundImage: "url('/analysis-bg.png')", backgroundSize: "cover", backgroundPosition: "center", minHeight: "100vh", color: "#fff", padding: "2rem", fontFamily: "Lilita One, sans-serif" }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
-          <h2 style={{ marginRight: '1rem' }}>Workout Analysis</h2>
-          <select value={week} onChange={(e) => setWeek(e.target.value)}>
-            {weekOptions.map((w) => (
-              <option key={w} value={w}>{w}</option>
-            ))}
-          </select>
-        </div>
-        <p>Total Volume: 0 kg</p>
-        <p>Top Estimated 1RM: 0 kg</p>
-        <p>Best Lift: -</p>
-        <button style={{ marginTop: '2rem', padding: '0.5rem 1rem' }}>Export to CSV</button>
-        <button onClick={() => setView("home")} style={{ marginLeft: '1rem', padding: '0.5rem 1rem' }}>Home</button>
+      <div style={backgroundStyle(backgroundAnalysis)}>
+        <h2 style={{ color: '#f97316' }}>Workout Analysis - {week}</h2>
+        <p>Session Duration: {duration}s</p>
+        <button onClick={exportToCSV}>Export CSV</button>
+        <button onClick={() => setView("home")}>Back to Home</button>
       </div>
     );
   }
 
-  return null;
+  if (view === "workout") {
+    return (
+      <div style={backgroundStyle(backgroundWorkout)}>
+        <h2 style={{ color: '#f97316' }}>{week}</h2>
+        <select value={week} onChange={(e) => setWeek(e.target.value)}>
+          {weeks.map((w) => <option key={w}>{w}</option>)}
+        </select>
+
+        <div style={{ marginTop: '1rem' }}>
+          <label>Rest Timer:</label>
+          <select value={selectedCountdown} onChange={(e) => setSelectedCountdown(Number(e.target.value))}>
+            <option value={60}>60 seconds</option>
+            <option value={90}>90 seconds</option>
+            <option value={120}>120 seconds</option>
+            <option value={180}>180 seconds</option>
+          </select>
+          <button onClick={() => setCountdown(selectedCountdown)}>Start Timer</button>
+          {countdown > 0 && <p>Countdown: {countdown}s</p>}
+        </div>
+
+        <div style={{ marginTop: '1rem' }}>
+          <button onClick={() => setStartTime(Date.now())}>Start Session</button>
+          <button onClick={() => {
+            setDuration(timer);
+            setStartTime(null);
+          }}>End Session</button>
+          <p>Live Timer: {timer}s</p>
+        </div>
+
+        {Object.entries(workoutPlan).map(([day, exercises]) => (
+          <div key={day}>
+            <h3
+              style={{ color: '#f97316', cursor: 'pointer' }}
+              onClick={() => toggleDay(day)}>{day}</h3>
+
+            {expandedDays.includes(day) && exercises.map((exercise, i) => (
+              <div key={i}>
+                <strong>{exercise}</strong>
+                {[0, 1, 2, 3].map((setIndex) => (
+                  <div key={setIndex}>
+                    <input
+                      placeholder="Weight (kg)"
+                      type="number"
+                      value={data[week]?.[day]?.[exercise]?.[setIndex]?.weight || ''}
+                      onChange={(e) => handleInputChange(day, exercise, setIndex, 'weight', e.target.value)}
+                    />
+                    <input
+                      placeholder="Reps"
+                      type="number"
+                      value={data[week]?.[day]?.[exercise]?.[setIndex]?.reps || ''}
+                      onChange={(e) => handleInputChange(day, exercise, setIndex, 'reps', e.target.value)}
+                    />
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        ))}
+
+        <button onClick={exportToCSV}>Export to CSV</button>
+        <button onClick={() => setView("home")}>Back to Home</button>
+      </div>
+    );
+  }
+
+  return (
+    <div style={backgroundStyle(backgroundHome)}>
+      <h1 style={{ fontSize: "2.5rem", color: "#f97316", textAlign: "center" }}>
+        Put The Work In <br /> Let's Do This!
+      </h1>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '2rem' }}>
+        <button onClick={() => setView("workout")}>Start Workout</button>
+        <button onClick={() => setView("analysis")}>View Analysis</button>
+        <button onClick={() => setView("guide")}>Loading Guide</button>
+      </div>
+    </div>
+  );
 }
