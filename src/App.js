@@ -1,258 +1,261 @@
-// Final Full Version - with Countdown Timer & Fixed Backgrounds
 import React, { useState, useEffect } from "react";
+
+const backgroundStyle = (imageFile) => ({
+  backgroundImage: `url(${process.env.PUBLIC_URL}/${imageFile})`,
+  backgroundSize: "cover",
+  backgroundPosition: "center",
+  minHeight: "100vh",
+  color: "white",
+  padding: "2rem"
+});
 
 const workoutPlan = {
   "Day 1 - Push": [
-    "Incline Dumbbell Press (4 sets of 10 reps)",
-    "Machine Chest Press (4 sets of 10 reps)",
-    "Dumbbell Shoulder Press (4 sets of 10 reps)",
-    "Lateral Raises (4 sets of 10 reps)",
-    "Overhead Rope Triceps Extension (4 sets of 10 reps)",
-    "Pushups (to failure)"
+    "Incline Dumbbell Press 4x10",
+    "Machine Chest Press 3x12",
+    "Dumbbell Shoulder Press 4x10",
+    "Lateral Raises 4x15",
+    "Overhead Rope Triceps Extension 4x12",
+    "Pushups to failure x2"
   ],
   "Day 2 - Pull": [
-    "Lat Pulldown (4 sets of 10 reps)",
-    "Seated Row (4 sets of 10 reps)",
-    "Dumbbell Shrugs (4 sets of 10 reps)",
-    "Face Pulls (4 sets of 10 reps)",
-    "Dumbbell Curls (4 sets of 10 reps)",
-    "Hanging Leg Raises (4 sets of 10 reps)"
+    "Lat Pulldown 4x10",
+    "Seated Row 3x12",
+    "Dumbbell Shrugs 3x15",
+    "Face Pulls 4x15",
+    "Dumbbell Curls 4x12",
+    "Hanging Leg Raises 4x15"
   ],
   "Day 3 - Legs": [
-    "Leg Press (4 sets of 10 reps)",
-    "Bulgarian Split Squat (4 sets of 10 reps)",
-    "Hamstring Curls (4 sets of 10 reps)",
-    "Calf Raises (4 sets of 10 reps)",
-    "Walking Lunges (4 sets of 10 reps)"
+    "Leg Press 4x12",
+    "Bulgarian Split Squats 3x10/leg",
+    "Hamstring Curls 4x15",
+    "Calf Raises 4x20",
+    "Walking Lunges 2x20 steps"
   ],
   "Day 4 - Shoulders + Arms": [
-    "Arnold Press (4 sets of 10 reps)",
-    "Cable Lateral Raises (4 sets of 10 reps)",
-    "Barbell Curls (4 sets of 10 reps)",
-    "Triceps Pushdowns (4 sets of 10 reps)",
-    "Reverse Pec Deck (4 sets of 10 reps)",
-    "Incline DB Curl + Overhead Triceps (superset) (4 sets of 10 reps)"
+    "Arnold Press 4x12",
+    "Cable Lateral Raises 4x15",
+    "Barbell Curls 4x12",
+    "Triceps Pushdowns 4x12",
+    "Reverse Pec Deck 3x15",
+    "Incline DB Curl + Overhead Triceps superset 3x12"
   ],
   "Day 5 - Conditioning + Abs": [
-    "Incline Walk (15 mins)",
-    "Battle Rope (4 rounds)",
-    "Sled Push (4 rounds)",
-    "Cable Crunch (4 sets of 15 reps)",
-    "Ab Rollouts (4 sets of 10 reps)",
-    "Russian Twists (4 sets of 20 reps)"
-  ],
-  "Day 6 - Rest": [],
-  "Day 7 - Rest": []
+    "Incline Walk 15 mins",
+    "Battle Rope 30s x4",
+    "Sled Push 20m x4",
+    "Cable Crunch 4x15",
+    "Ab Rollouts 3x10",
+    "Russian Twists 3x20"
+  ]
 };
-
-const weeks = Array.from({ length: 12 }, (_, i) => `Week ${i + 1}`);
-
-const backgroundStyle = (img) => ({
-  backgroundImage: `url(${img})`,
-  backgroundSize: "cover",
-  backgroundPosition: "center",
-  backgroundRepeat: "no-repeat",
-  minHeight: "100vh",
-  padding: "2rem",
-  color: "white",
-  fontFamily: "Arial, sans-serif"
-});
-
-const backgroundHome = process.env.PUBLIC_URL + "/hero.png";
-const backgroundWorkout = process.env.PUBLIC_URL + "/workout-bg.png";
-const backgroundAnalysis = process.env.PUBLIC_URL + "/analysis-bg.png";
-const backgroundGuide = process.env.PUBLIC_URL + "/loading-guide.png";
 
 export default function App() {
   const [view, setView] = useState("home");
   const [week, setWeek] = useState("Week 1");
-  const [data, setData] = useState({});
   const [startTime, setStartTime] = useState(null);
-  const [duration, setDuration] = useState(0);
-  const [timer, setTimer] = useState(0);
-  const [expandedDays, setExpandedDays] = useState([]);
-
-  // Countdown timer state
-  const [countdown, setCountdown] = useState(0);
-  const [selectedCountdown, setSelectedCountdown] = useState(60);
+  const [endTime, setEndTime] = useState(null);
+  const [restTime, setRestTime] = useState(60);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [timerActive, setTimerActive] = useState(false);
+  const [sets, setSets] = useState({});
 
   useEffect(() => {
     let interval;
-    if (startTime) {
-      interval = setInterval(() => {
-        setTimer(Math.floor((Date.now() - startTime) / 1000));
-      }, 1000);
+    if (timerActive && timeLeft > 0) {
+      interval = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
+    } else {
+      clearInterval(interval);
     }
     return () => clearInterval(interval);
-  }, [startTime]);
+  }, [timerActive, timeLeft]);
 
-  useEffect(() => {
-    let interval;
-    if (countdown > 0) {
-      interval = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev === 1) new Audio("/beep.mp3").play();
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [countdown]);
-
-  const toggleDay = (day) => {
-    setExpandedDays((prev) =>
-      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
-    );
-  };
-
-  const handleInputChange = (day, exercise, setIndex, field, value) => {
-    setData((prev) => {
-      const weekData = { ...prev[week] } || {};
-      const dayData = { ...weekData[day] } || {};
-      const exerciseData = [...(dayData[exercise] || [])];
-      exerciseData[setIndex] = { ...exerciseData[setIndex], [field]: value };
-      return {
-        ...prev,
-        [week]: {
-          ...weekData,
-          [day]: {
-            ...dayData,
-            [exercise]: exerciseData
-          }
-        }
-      };
+  const handleAddSet = (exercise) => {
+    setSets((prev) => {
+      const updated = { ...prev };
+      if (!updated[exercise]) updated[exercise] = [];
+      updated[exercise] = [...updated[exercise], { weight: "", reps: "" }];
+      return updated;
     });
   };
 
+  const handleRemoveSet = (exercise) => {
+    setSets((prev) => {
+      const updated = { ...prev };
+      if (updated[exercise] && updated[exercise].length > 0) {
+        updated[exercise] = updated[exercise].slice(0, -1);
+      }
+      return updated;
+    });
+  };
+
+  const calculate1RM = (weight, reps) => {
+    const w = parseFloat(weight);
+    const r = parseFloat(reps);
+    if (!isNaN(w) && !isNaN(r) && r > 0) {
+      const est = Math.round(w * (1 + r / 30));
+      return {
+        estimated1RM: est,
+        nextWeight: Math.round(w + 2.5)
+      };
+    }
+    return { estimated1RM: "-", nextWeight: "-" };
+  };
   const exportToCSV = () => {
-    const lines = ["Week,Day,Exercise,Set,Weight,Reps"];
-    Object.entries(data).forEach(([w, weekData]) => {
-      Object.entries(weekData).forEach(([day, dayData]) => {
-        Object.entries(dayData).forEach(([exercise, sets]) => {
-          sets.forEach((set, idx) => {
-            lines.push([
-              w,
-              day,
-              exercise,
-              idx + 1,
-              set.weight,
-              set.reps
-            ].join(","));
-          });
-        });
+    const lines = ["Exercise,Set,Weight,Reps,Estimated 1RM,Next Weight"];
+    Object.entries(sets).forEach(([exercise, data]) => {
+      data.forEach((set, index) => {
+        const { estimated1RM, nextWeight } = calculate1RM(set.weight, set.reps);
+        lines.push(
+          `${exercise},${index + 1},${set.weight},${set.reps},${estimated1RM},${nextWeight}`
+        );
       });
     });
     const blob = new Blob([lines.join("\n")], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "workout_data.csv";
+    a.download = "workout_analysis.csv";
     a.click();
   };
-
-  if (view === "guide") {
+  if (view === "home") {
     return (
-      <div style={backgroundStyle(backgroundGuide)}>
-        <h2 style={{ color: "#f97316" }}>Progressive Loading Table (RIR-style)</h2>
-        <ul>
-          <li>Set 1: Easy (70%) – Lightest weight – warm-up pace</li>
-          <li>Set 2: Moderate (80–85%) – Slightly heavier – still controlled</li>
-          <li>Set 3: Hard (90%) – Heavier again – challenge your strength</li>
-          <li>Set 4: Max Effort (95–100%) – Heaviest you can go for 10 reps or close to failure</li>
-        </ul>
-        <p>Example: Dumbbell Shoulder Press – Set 1: 14kg, Set 2: 16kg, Set 3: 18kg, Set 4: 20kg</p>
-        <p>This method minimizes injury risk and builds strength efficiently.</p>
-        <button onClick={() => setView("home")}>Back to Home</button>
-      </div>
-    );
-  }
-
-  if (view === "analysis") {
-    return (
-      <div style={backgroundStyle(backgroundAnalysis)}>
-        <h2 style={{ color: '#f97316' }}>Workout Analysis - {week}</h2>
-        <p>Session Duration: {duration}s</p>
-        <button onClick={exportToCSV}>Export CSV</button>
-        <button onClick={() => setView("home")}>Back to Home</button>
+      <div style={backgroundStyle("hero-2.png")}> 
+        <h1 style={{ fontSize: "2.5rem", color: "#f97316", textAlign: "center" }}>
+          Put The Work In <br /> Let's Do This!
+        </h1>
+        <div style={{ display: "flex", justifyContent: "center", marginTop: "1rem", gap: "1rem" }}>
+          <button onClick={() => setView("workout")}>Start Workout</button>
+          <button onClick={() => setView("analysis")}>View Analysis</button>
+          <button onClick={() => setView("guide")}>Loading Guide</button>
+        </div>
       </div>
     );
   }
 
   if (view === "workout") {
     return (
-      <div style={backgroundStyle(backgroundWorkout)}>
-        <h2 style={{ color: '#f97316' }}>{week}</h2>
-        <select value={week} onChange={(e) => setWeek(e.target.value)}>
-          {weeks.map((w) => <option key={w}>{w}</option>)}
+      <div style={backgroundStyle("workout-bg.png")}>
+        <h2 style={{ color: "#f97316" }}>Workout Plan</h2>
+
+        <label htmlFor="weekSelect">Select Week:</label>
+        <select id="weekSelect" value={week} onChange={(e) => setWeek(e.target.value)}>
+          {[...Array(12)].map((_, i) => (
+            <option key={i} value={`Week ${i + 1}`}>{`Week ${i + 1}`}</option>
+          ))}
         </select>
 
-        <div style={{ marginTop: '1rem' }}>
-          <label>Rest Timer:</label>
-          <select value={selectedCountdown} onChange={(e) => setSelectedCountdown(Number(e.target.value))}>
-            <option value={60}>60 seconds</option>
-            <option value={90}>90 seconds</option>
-            <option value={120}>120 seconds</option>
-            <option value={180}>180 seconds</option>
-          </select>
-          <button onClick={() => setCountdown(selectedCountdown)}>Start Timer</button>
-          {countdown > 0 && <p>Countdown: {countdown}s</p>}
+        <div style={{ marginBottom: "1rem" }}>
+          <button onClick={() => setStartTime(Date.now())}>Start Session</button>
+          <button onClick={() => setEndTime(Date.now())}>End Session</button>
+          {startTime && endTime && (
+            <p>Session Duration: {Math.round((endTime - startTime) / 60000)} minutes</p>
+          )}
         </div>
 
-        <div style={{ marginTop: '1rem' }}>
-          <button onClick={() => setStartTime(Date.now())}>Start Session</button>
+        <div style={{ marginBottom: "1rem" }}>
+          Rest Timer:
+          <select value={restTime} onChange={(e) => setRestTime(parseInt(e.target.value))}>
+            {[60, 90, 120, 180].map((time) => (
+              <option key={time} value={time}>{time} seconds</option>
+            ))}
+          </select>
           <button onClick={() => {
-            setDuration(timer);
-            setStartTime(null);
-          }}>End Session</button>
-          <p>Live Timer: {timer}s</p>
+            setTimeLeft(restTime);
+            setTimerActive(true);
+          }}>Start Rest</button>
+          {timeLeft > 0 && <span style={{ marginLeft: "1rem" }}>Rest Time Left: {timeLeft}s</span>}
         </div>
 
         {Object.entries(workoutPlan).map(([day, exercises]) => (
-          <div key={day}>
-            <h3
-              style={{ color: '#f97316', cursor: 'pointer' }}
-              onClick={() => toggleDay(day)}>{day}</h3>
-
-            {expandedDays.includes(day) && exercises.map((exercise, i) => (
+          <details key={day} open={false}>
+            <summary style={{ color: "#f97316", fontSize: "1.5rem" }}>{day}</summary>
+            {exercises.map((ex, i) => (
               <div key={i}>
-                <strong>{exercise}</strong>
-                {[0, 1, 2, 3].map((setIndex) => (
-                  <div key={setIndex}>
-                    <input
-                      placeholder="Weight (kg)"
-                      type="number"
-                      value={data[week]?.[day]?.[exercise]?.[setIndex]?.weight || ''}
-                      onChange={(e) => handleInputChange(day, exercise, setIndex, 'weight', e.target.value)}
-                    />
-                    <input
-                      placeholder="Reps"
-                      type="number"
-                      value={data[week]?.[day]?.[exercise]?.[setIndex]?.reps || ''}
-                      onChange={(e) => handleInputChange(day, exercise, setIndex, 'reps', e.target.value)}
-                    />
-                  </div>
-                ))}
+                <strong>{ex}</strong>
+                <div style={{ margin: "0.5rem 0" }}>
+                  <button onClick={() => handleAddSet(ex)}>+ Add Set</button>
+                  <button onClick={() => handleRemoveSet(ex)} style={{ marginLeft: "1rem" }}>- Remove Set</button>
+                </div>
+                {(sets[ex] || []).map((set, index) => {
+                  const { estimated1RM, nextWeight } = calculate1RM(set.weight, set.reps);
+                  return (
+                    <div key={index}>
+                      <input placeholder="Weight (kg)" value={set.weight} onChange={(e) => {
+                        const updated = [...sets[ex]];
+                        updated[index].weight = e.target.value;
+                        setSets((prev) => ({ ...prev, [ex]: updated }));
+                      }} />
+                      <input placeholder="Reps" value={set.reps} onChange={(e) => {
+                        const updated = [...sets[ex]];
+                        updated[index].reps = e.target.value;
+                        setSets((prev) => ({ ...prev, [ex]: updated }));
+                      }} />
+                      <span> 1RM: {estimated1RM} | Next: {nextWeight}kg</span>
+                    </div>
+                  );
+                })}
               </div>
             ))}
-          </div>
+          </details>
         ))}
 
-        <button onClick={exportToCSV}>Export to CSV</button>
-        <button onClick={() => setView("home")}>Back to Home</button>
+        <button onClick={() => setView("home")} style={{ marginTop: "2rem" }}>Back to Home</button>
+      </div>
+    );
+  }
+
+  if (view === "analysis") {
+    return (
+      <div style={backgroundStyle("analysis-bg.png")}>
+        <h2 style={{ fontSize: "2rem" }}>Workout Analysis</h2>
+        <p>Total Volume: 0.00 kg</p>
+        <p>Top Estimated 1RM: 0.00 kg</p>
+        <p>Best Lift: -</p>
+        <button onClick={exportToCSV}>Download CSV</button>
+        <button onClick={() => setView("home")} style={{ marginTop: "2rem", marginLeft: "1rem" }}>
+          Back to Home
+        </button>
+      </div>
+    );
+  }
+
+  if (view === "guide") {
+    return (
+      <div style={backgroundStyle("loading guide.png")}>
+        <h2>Progressive Loading Table (RIR-style)</h2>
+        <table style={{ width: '100%', marginTop: '1rem', backgroundColor: '#222', color: 'white', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr>
+              <th>Set</th><th>Effort Level</th><th>Weight Strategy</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>Easy (70%)</td><td>Lightest weight – warm-up pace, prep muscles</td></tr>
+            <tr><td>2</td><td>Moderate (80–85%)</td><td>Slightly heavier – still controlled</td></tr>
+            <tr><td>3</td><td>Hard (90%)</td><td>Heavier again – challenge your strength</td></tr>
+            <tr><td>4</td><td>Max Effort (95–100%)</td><td>Heaviest you can go for 10 reps or close to failure</td></tr>
+          </tbody>
+        </table>
+        <div style={{ marginTop: '2rem' }}>
+          <p><strong>Example:</strong> Dumbbell Shoulder Press (Target 10 reps)</p>
+          <ul>
+            <li>Set 1: 14kg (easy)</li>
+            <li>Set 2: 16kg (moderate)</li>
+            <li>Set 3: 18kg (hard)</li>
+            <li>Set 4: 20kg (go close to failure)</li>
+          </ul>
+        </div>
+        <button onClick={() => setView("home")} style={{ marginTop: "2rem" }}>Back to Home</button>
       </div>
     );
   }
 
   return (
-    <div style={backgroundStyle(backgroundHome)}>
-      <h1 style={{ fontSize: "2.5rem", color: "#f97316", textAlign: "center" }}>
-        Put The Work In <br /> Let's Do This!
-      </h1>
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '2rem' }}>
-        <button onClick={() => setView("workout")}>Start Workout</button>
-        <button onClick={() => setView("analysis")}>View Analysis</button>
-        <button onClick={() => setView("guide")}>Loading Guide</button>
-      </div>
+    <div style={{ padding: '2rem', backgroundColor: '#111', color: 'white' }}>
+      <h2>View "{view}" not recognized.</h2>
+      <button onClick={() => setView("home")}>Back to Home</button>
     </div>
   );
 }
