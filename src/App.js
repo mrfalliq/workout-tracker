@@ -223,7 +223,7 @@ export default function App() {
 
   if (view === "guide") {
     return (
-      <div style={backgroundStyle("loading guide.png")}>
+      <div style={backgroundStyle("loading-guide.png")}>
         <h2>Progressive Loading Table (RIR-style)</h2>
         <table style={{ width: '100%', marginTop: '1rem', backgroundColor: '#222', color: 'white', borderCollapse: 'collapse' }}>
           <thead>
