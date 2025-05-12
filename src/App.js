@@ -106,24 +106,27 @@ const backgroundStyle = (img) => ({
 });
 
 const NavBar = ({ view, setView }) => (
-  <div style={{
+  <div
+  style={{
     display: "flex",
+    flexWrap: "wrap", // allows wrapping on small screens
     justifyContent: "center",
     backgroundColor: "#000",
     padding: "1rem",
-    gap: "1rem",
+    gap: "0.5rem", // smaller gap to fit better on mobile
     borderBottom: "1px solid #f97316"
-  }}>
-{["home", "workout", "analysis", "guide", "program"].map(v => (
-          <button
-        key={v}
-        onClick={() => setView(v)}
-        style={view === v ? activeButtonStyle : buttonStyle}
-      >
-        {v.charAt(0).toUpperCase() + v.slice(1)}
-      </button>
-    ))}
-  </div>
+  }}
+>
+  {["home", "workout", "analysis", "guide", "program"].map((v) => (
+    <button
+      key={v}
+      onClick={() => setView(v)}
+      style={view === v ? activeButtonStyle : buttonStyle}
+    >
+      {v.charAt(0).toUpperCase() + v.slice(1)}
+    </button>
+  ))}
+</div>
 );
 
 function App() {

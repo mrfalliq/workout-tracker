@@ -12,6 +12,12 @@
     animation: App-logo-spin infinite 20s linear;
   }
 }
+@media (max-width: 400px) {
+  .nav-btn {
+    flex: 1 1 100%;
+    text-align: center;
+  }
+}
 
 .App-header {
   background-color: #282c34;
