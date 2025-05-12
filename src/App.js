@@ -119,7 +119,7 @@ const App = () => {
   });
 
   const renderHome = () => (
-    <div style={backgroundStyle("hero-2.png")}>
+    <div style={backgroundStyle("hero-3.png")}>
       <h1 style={{ fontSize: "2.5rem", color: "#f97316", textAlign: "center" }}>Put The Work In<br />Let's Do This!</h1>
       <div style={{ display: "flex", justifyContent: "center", gap: "1rem", marginTop: "1rem" }}>
         <button onClick={() => setView("workout")}>Start Workout</button>
