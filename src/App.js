@@ -102,14 +102,13 @@ export default function App() {
     }
     return { estimated1RM: "-", nextWeight: "-" };
   };
+
   const exportToCSV = () => {
     const lines = ["Exercise,Set,Weight,Reps,Estimated 1RM,Next Weight"];
     Object.entries(sets).forEach(([exercise, data]) => {
       data.forEach((set, index) => {
         const { estimated1RM, nextWeight } = calculate1RM(set.weight, set.reps);
-        lines.push(
-          `${exercise},${index + 1},${set.weight},${set.reps},${estimated1RM},${nextWeight}`
-        );
+        lines.push(`${exercise},${index + 1},${set.weight},${set.reps},${estimated1RM},${nextWeight}`);
       });
     });
     const blob = new Blob([lines.join("\n")], { type: "text/csv" });
@@ -119,9 +118,10 @@ export default function App() {
     a.download = "workout_analysis.csv";
     a.click();
   };
+
   if (view === "home") {
     return (
-      <div style={backgroundStyle("hero-2.png")}> 
+      <div style={backgroundStyle("hero.png")}> 
         <h1 style={{ fontSize: "2.5rem", color: "#f97316", textAlign: "center" }}>
           Put The Work In <br /> Let's Do This!
         </h1>
@@ -136,9 +136,8 @@ export default function App() {
 
   if (view === "workout") {
     return (
-      <div style={backgroundStyle("workout-bg.png")}>
+      <div style={backgroundStyle("workout-bg.png")}> 
         <h2 style={{ color: "#f97316" }}>Workout Plan</h2>
-
         <label htmlFor="weekSelect">Select Week:</label>
         <select id="weekSelect" value={week} onChange={(e) => setWeek(e.target.value)}>
           {[...Array(12)].map((_, i) => (
@@ -169,10 +168,10 @@ export default function App() {
         </div>
 
         {Object.entries(workoutPlan).map(([day, exercises]) => (
-          <details key={day} open={false}>
+          <details key={day}>
             <summary style={{ color: "#f97316", fontSize: "1.5rem" }}>{day}</summary>
             {exercises.map((ex, i) => (
-              <div key={i}>
+              <div key={i} style={{ backgroundColor: "#222", padding: "1rem", margin: "1rem 0", borderRadius: "0.5rem" }}>
                 <strong>{ex}</strong>
                 <div style={{ margin: "0.5rem 0" }}>
                   <button onClick={() => handleAddSet(ex)}>+ Add Set</button>
@@ -181,7 +180,7 @@ export default function App() {
                 {(sets[ex] || []).map((set, index) => {
                   const { estimated1RM, nextWeight } = calculate1RM(set.weight, set.reps);
                   return (
-                    <div key={index}>
+                    <div key={index} style={{ marginBottom: "0.5rem" }}>
                       <input placeholder="Weight (kg)" value={set.weight} onChange={(e) => {
                         const updated = [...sets[ex]];
                         updated[index].weight = e.target.value;
@@ -192,7 +191,7 @@ export default function App() {
                         updated[index].reps = e.target.value;
                         setSets((prev) => ({ ...prev, [ex]: updated }));
                       }} />
-                      <span> 1RM: {estimated1RM} | Next: {nextWeight}kg</span>
+                      <span style={{ marginLeft: "1rem" }}>1RM: {estimated1RM} | Next: {nextWeight}kg</span>
                     </div>
                   );
                 })}
