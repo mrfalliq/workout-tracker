@@ -198,7 +198,17 @@ const handleLogSet = (exerciseName, totalSets) => {
         <h2 style={{ color: "#f97316" }}>Workout Page</h2>
         <p style={{ color: "white", marginBottom: "1rem" }}>Log your sets and calculate volume</p>
 
-        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "1rem" }}>
+        <div
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "0.5rem",
+    marginBottom: "1rem",
+    maxWidth: "400px",
+    margin: "0 auto"
+  }}
+>
           <input value={exercise} onChange={e => setExercise(e.target.value)} placeholder="Exercise" style={inputStyle} />
           <input type="number" value={weight} onChange={e => setWeight(e.target.value)} placeholder="Weight (kg)" style={inputStyle} />
           <input type="number" value={reps} onChange={e => setReps(e.target.value)} placeholder="Reps" style={inputStyle} />
@@ -221,34 +231,43 @@ const handleLogSet = (exerciseName, totalSets) => {
 </button>
         </div>
 
-        <table style={{ width: "100%", color: "white", fontFamily: "'Oswald', sans-serif" }}>
-          <thead>
-            <tr style={{ color: "#f97316", borderBottom: "1px solid #f97316" }}>
-              <th>Exercise</th><th>Weight</th><th>Reps</th><th>Set</th><th>Volume</th><th>Next Weight</th><th>1RM</th><th style={thStyle}>Log</th> 
-            </tr>
-          </thead>
-          <tbody>
-            {log.map((entry, idx) => (
-              <tr key={idx} style={{ textAlign: "center" }}>
-                <td>{entry.exercise}</td>
-                <td>{entry.weight}</td>
-                <td>{entry.reps}</td>
-                <td>{entry.sets}</td>
-                <td>{entry.volume}</td>
-                <td>{entry.suggestedNext}</td>
-                <td>{entry.oneRM}</td>
-                <td>
-  <button
-    onClick={() => handleDelete(idx)}
-    style={{ ...buttonStyle, borderColor: "red", color: "red", padding: "0.2rem 0.5rem" }}
-  >
-    ✕
-  </button>
-</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div style={{ overflowX: "auto" }}>
+  <table style={{ width: "100%", color: "white", fontFamily: "'Oswald', sans-serif", minWidth: "600px" }}>
+    <thead>
+      <tr style={{ color: "#f97316", borderBottom: "1px solid #f97316" }}>
+        <th>Exercise</th>
+        <th>Weight</th>
+        <th>Reps</th>
+        <th>Set</th>
+        <th>Volume</th>
+        <th>Next Weight</th>
+        <th>1RM</th>
+        <th style={thStyle}>Log</th>
+      </tr>
+    </thead>
+    <tbody>
+      {log.map((entry, idx) => (
+        <tr key={idx} style={{ textAlign: "center" }}>
+          <td>{entry.exercise}</td>
+          <td>{entry.weight}</td>
+          <td>{entry.reps}</td>
+          <td>{entry.sets}</td>
+          <td>{entry.volume}</td>
+          <td>{entry.suggestedNext}</td>
+          <td>{entry.oneRM}</td>
+          <td>
+            <button
+              onClick={() => handleDelete(idx)}
+              style={{ ...buttonStyle, borderColor: "red", color: "red", padding: "0.2rem 0.5rem" }}
+            >
+              ✕
+            </button>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
       </div>
     );
   };
