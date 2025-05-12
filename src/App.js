@@ -1,6 +1,15 @@
 
 import React, { useState, useEffect } from "react";
 
+const buttonStyle = {
+  background: "transparent",
+  color: "#f97316",
+  border: "2px solid #f97316",
+  padding: "0.5rem 1rem",
+  borderRadius: "8px",
+  cursor: "pointer",
+  margin: "0.25rem"
+};
 const workoutPlan = {
   "Day 1 - Push": [
     { name: "Incline Dumbbell Press", sets: 4, reps: 10, link: "https://youtu.be/8iPEnn-ltC8" },
@@ -122,9 +131,9 @@ const App = () => {
     <div style={backgroundStyle("hero-4.png")}>
       <h1 style={{ fontSize: "2.5rem", color: "#f97316", textAlign: "center" }}>Put The Work In<br />Let's Do This!</h1>
       <div style={{ display: "flex", justifyContent: "center", gap: "1rem", marginTop: "1rem" }}>
-        <button onClick={() => setView("workout")}>Start Workout</button>
-        <button onClick={() => setView("analysis")}>View Analysis</button>
-        <button onClick={() => setView("guide")}>Loading Guide</button>
+        <button style={buttonStyle} onClick={() => setView("workout")}>Start Workout</button>
+        <button style={buttonStyle} onClick={() => setView("analysis")}>View Analysis</button>
+        <button style={buttonStyle} onClick={() => setView("guide")}>Loading Guide</button>
       </div>
     </div>
   );
@@ -140,12 +149,12 @@ const App = () => {
         <select onChange={e => setRest(+e.target.value)}>
           {[60, 90, 120, 180].map(sec => <option key={sec} value={sec}>{sec}s</option>)}
         </select>
-        <button onClick={() => setRestCountdown(rest)}>Start Timer</button>
-        <button onClick={stopRestTimer}>Stop Timer</button>
+        <button style={buttonStyle} onClick={() => setRestCountdown(rest)}>Start Timer</button>
+        <button style={buttonStyle} onClick={stopRestTimer}>Stop Timer</button>
         <p>Rest Countdown: {restCountdown > 0 ? `${restCountdown}s` : "-"}</p>
       </div>
-      <button onClick={startSession}>Start Session</button>
-      <button onClick={endSession}>End Session</button>
+      <button style={buttonStyle} onClick={startSession}>Start Session</button>
+      <button style={buttonStyle} onClick={endSession}>End Session</button>
       <p>Session Time: {sessionTime}s</p>
 
       {Object.entries(workoutPlan).map(([day, exercises]) => (
@@ -180,8 +189,13 @@ const App = () => {
                       </div>
                     ))}
                     <div style={{ marginTop: "0.5rem" }}>
-                      <button onClick={() => addSet(day, ex.name)}>➕ Add Set</button>
-                      <button onClick={() => removeSet(day, ex.name)} style={{ marginLeft: "0.5rem" }}>➖ Remove Set</button>
+                      <button style={buttonStyle} onClick={() => addSet(day, ex.name)}>➕ Add Set</button>
+                      <button
+  style={{ ...buttonStyle, marginLeft: "0.5rem" }}
+  onClick={() => removeSet(day, ex.name)}
+>
+  ➖ Remove Set
+</button>
                     </div>
                   </div>
                 );
@@ -190,7 +204,12 @@ const App = () => {
           )}
         </div>
       ))}
-      <button onClick={() => setView("home")} style={{ marginTop: "2rem" }}>Back to Home</button>
+      <button
+  style={{ ...buttonStyle, marginTop: "2rem" }}
+  onClick={() => setView("home")}
+>
+  Home
+</button>
     </div>
   );
 
@@ -200,36 +219,91 @@ const App = () => {
       <p>Total Volume: --</p>
       <p>Top 1RM: --</p>
       <p>Best Lift: --</p>
-      <button>Export to CSV</button>
-      <button onClick={() => setView("home")} style={{ marginLeft: "1rem" }}>Back to Home</button>
+      <button style={buttonStyle}>Export to CSV</button>
+      <button
+  style={{
+    background: "transparent",
+    color: "#f97316",
+    border: "2px solid #f97316",
+    padding: "0.5rem 1rem",
+    borderRadius: "8px",
+    cursor: "pointer",
+    marginLeft: "1rem"
+  }}
+  onClick={() => setView("home")}
+>
+  Home
+</button>
     </div>
   );
 
-  const renderGuide = () => (
-    <div style={backgroundStyle("loading-guide.png")}>
-      <h2>Progressive Loading Table (RIR-style)</h2>
-      <table style={{ backgroundColor: "#000", color: "white", width: "100%" }}>
+ const tableHeaderStyle = {
+  padding: "1rem",
+  border: "1px solid #f97316",
+  backgroundColor: "#111",
+  color: "#f97316",
+  textAlign: "left"
+};
+
+const tableCellStyle = {
+  padding: "1rem",
+  border: "1px solid #f97316"
+};
+
+const renderGuide = () => (
+  <div style={backgroundStyle("loading-guide.png")}>
+    <div style={{ backgroundColor: "rgba(0, 0, 0, 0.8)", padding: "2rem", borderRadius: "8px", color: "white" }}>
+      <h2 style={{ color: "#f97316", textAlign: "center" }}>Progressive Loading Table (RIR-style)</h2>
+
+      <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "2rem" }}>
         <thead>
-          <tr><th>Set</th><th>Effort Level</th><th>Weight Strategy</th></tr>
+          <tr>
+            <th style={tableHeaderStyle}>Set</th>
+            <th style={tableHeaderStyle}>Effort Level</th>
+            <th style={tableHeaderStyle}>Weight Strategy</th>
+          </tr>
         </thead>
         <tbody>
-          <tr><td>1</td><td>Easy (70%)</td><td>Warm-up pace</td></tr>
-          <tr><td>2</td><td>Moderate (80–85%)</td><td>Controlled heavier</td></tr>
-          <tr><td>3</td><td>Hard (90%)</td><td>Challenging strength</td></tr>
-          <tr><td>4</td><td>Max Effort (95–100%)</td><td>Go close to failure</td></tr>
+          <tr>
+            <td style={tableCellStyle}>1</td>
+            <td style={tableCellStyle}>Easy (70%)</td>
+            <td style={tableCellStyle}>Warm-up pace</td>
+          </tr>
+          <tr>
+            <td style={tableCellStyle}>2</td>
+            <td style={tableCellStyle}>Moderate (80–85%)</td>
+            <td style={tableCellStyle}>Controlled heavier</td>
+          </tr>
+          <tr>
+            <td style={tableCellStyle}>3</td>
+            <td style={tableCellStyle}>Hard (90%)</td>
+            <td style={tableCellStyle}>Challenging strength</td>
+          </tr>
+          <tr>
+            <td style={tableCellStyle}>4</td>
+            <td style={tableCellStyle}>Max Effort (95–100%)</td>
+            <td style={tableCellStyle}>Go close to failure</td>
+          </tr>
         </tbody>
       </table>
-      <p><strong>Example:</strong> DB Shoulder Press (10 reps)</p>
-      <ul>
-        <li>Set 1: 14kg (easy)</li>
-        <li>Set 2: 16kg (moderate)</li>
-        <li>Set 3: 18kg (hard)</li>
-        <li>Set 4: 20kg (max)</li>
-      </ul>
-      <p>This approach prevents injury, preserves form, and builds muscle effectively.</p>
-      <button onClick={() => setView("home")}>Back to Home</button>
+
+      <div style={{ marginTop: "2rem" }}>
+        <p><strong style={{ color: "#f97316" }}>Example:</strong> Dumbbell Shoulder Press (10 reps)</p>
+        <ul style={{ paddingLeft: "1.5rem" }}>
+          <li>Set 1: 14kg (easy)</li>
+          <li>Set 2: 16kg (moderate)</li>
+          <li>Set 3: 18kg (hard)</li>
+          <li>Set 4: 20kg (max)</li>
+        </ul>
+        <p>This approach minimizes injury risk, preserves form, and builds muscle effectively.</p>
+      </div>
+
+      <div style={{ textAlign: "center", marginTop: "2rem" }}>
+        <button style={buttonStyle} onClick={() => setView("home")}>Home</button>
+      </div>
     </div>
-  );
+  </div>
+);
 
   return view === "home"
     ? renderHome()
