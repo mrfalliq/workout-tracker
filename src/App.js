@@ -212,7 +212,12 @@ const handleLogSet = (exerciseName, totalSets) => {
     margin: "0 auto"
   }}
 >
-          <input value={exercise} onChange={e => setExercise(e.target.value)} placeholder="Exercise" style={inputStyle} />
+          <select value={exercise} onChange={e => setExercise(e.target.value)} style={inputStyle}>
+  <option value="">-- Select Exercise --</option>
+  {Object.values(trainingProgram).flat().map((item, idx) => (
+    <option key={idx} value={item.exercise}>{item.exercise}</option>
+  ))}
+</select>
           <input type="number" value={weight} onChange={e => setWeight(e.target.value)} placeholder="Weight (kg)" style={inputStyle} />
           <input type="number" value={reps} onChange={e => setReps(e.target.value)} placeholder="Reps" style={inputStyle} />
           <button onClick={handleAdd} style={buttonStyle}>Add</button><button
